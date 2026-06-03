@@ -1,12 +1,7 @@
 package one.yufz.xposed
 
-
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import java.lang.reflect.Member
 import java.lang.reflect.Method
-
 
 fun Any.callMethod(methodName: String, vararg args: Any): Any? =
     XposedHelpers.callMethod(this, methodName, *args)
@@ -23,8 +18,8 @@ fun Class<*>.callStaticMethod(
     vararg args: Any
 ): Any? = XposedHelpers.callStaticMethod(this, methodName, parameterTypes, *args)
 
-typealias HookAction = XC_MethodHook.MethodHookParam.() -> Unit
-typealias ReplaceAction = XC_MethodHook.MethodHookParam.() -> Any?
+typealias HookAction = de.robv.android.xposed.XC_MethodHook.MethodHookParam.() -> Unit
+typealias ReplaceAction = de.robv.android.xposed.XC_MethodHook.MethodHookParam.() -> Any?
 typealias HookCallback = HookContext.() -> Unit
 
 fun Class<*>.hookMethod(methodName: String, vararg parameterTypes: Class<*>, callback: HookCallback) =
@@ -34,23 +29,23 @@ fun Class<*>.hookConstructor(vararg parameterTypes: Class<*>, callback: HookCall
     XposedHelpers.findAndHookConstructor(this, *parameterTypes, MethodHook(callback))
 
 fun Class<*>.hookAllConstructor(callback: HookCallback) =
-    XposedBridge.hookAllConstructors(this, MethodHook(callback))
+    de.robv.android.xposed.XposedBridge.hookAllConstructors(this, MethodHook(callback))
 
 fun hookMethod(className: String, classLoader: ClassLoader, methodName: String, vararg parameterTypes: Class<*>, callback: HookCallback) =
     XposedHelpers.findAndHookMethod(className, classLoader, methodName, *parameterTypes, MethodHook(callback))
 
 fun hookConstructor(className: String, classLoader: ClassLoader, methodName: String, vararg parameterTypes: Class<*>, callback: HookCallback) =
-    XposedHelpers.findAndHookConstructor(className, classLoader, methodName, *parameterTypes, MethodHook(callback))
+    XposedHelpers.findAndHookConstructor(className, classLoader, *parameterTypes, MethodHook(callback))
 
-fun Method.hook(callback: HookCallback) = XposedBridge.hookMethod(this, MethodHook(callback))
+fun Method.hook(callback: HookCallback) = de.robv.android.xposed.XposedBridge.hookMethod(this, MethodHook(callback))
 
 fun Class<*>.hookAllMethods(methodName: String, callback: HookCallback) =
-    XposedBridge.hookAllMethods(this, methodName, MethodHook(callback))
+    de.robv.android.xposed.XposedBridge.hookAllMethods(this, methodName, MethodHook(callback))
 
-class MethodHook(callback: HookCallback) : XC_MethodHook() {
+class MethodHook(callback: HookCallback) : de.robv.android.xposed.XC_MethodHook() {
     private val context = HookContext(this).apply(callback)
 
-    override fun beforeHookedMethod(param: MethodHookParam) {
+    override fun beforeHookedMethod(param: de.robv.android.xposed.XC_MethodHook.MethodHookParam) {
         super.beforeHookedMethod(param)
 
         context.replaceAction?.let {
@@ -65,7 +60,7 @@ class MethodHook(callback: HookCallback) : XC_MethodHook() {
         context.beforeAction?.invoke(param)
     }
 
-    override fun afterHookedMethod(param: MethodHookParam) {
+    override fun afterHookedMethod(param: de.robv.android.xposed.XC_MethodHook.MethodHookParam) {
         super.afterHookedMethod(param)
         context.afterAction?.invoke(param)
     }
@@ -94,8 +89,8 @@ class HookContext(private val methodHook: MethodHook) {
         this.replaceAction = action
     }
 
-    fun XC_MethodHook.MethodHookParam.unhook() {
-        XposedBridge.unhookMethod(this.method, methodHook)
+    fun de.robv.android.xposed.XC_MethodHook.MethodHookParam.unhook() {
+        de.robv.android.xposed.XposedBridge.unhookMethod(this.method, methodHook)
     }
 }
 
@@ -115,7 +110,7 @@ inline operator fun <reified T> Any.set(name: String, value: T?) = setField(name
 fun <T> Any.getField(name: String, fieldClazz: Class<T>): T? {
     val obj = if (this is Class<*>) null else this
     val thisClass = if (this is Class<*>) this else this.javaClass
-    val field = findField(thisClass, name)
+    val field = XposedHelpers.findField(thisClass, name)
 
     val value = when (fieldClazz) {
         Boolean::class.java -> field.getBoolean(obj)
@@ -135,7 +130,7 @@ fun <T> Any.setField(name: String, value: T?, fieldClass: Class<T>) {
     val obj = if (this is Class<*>) null else this
     val thisClass = if (this is Class<*>) this else this.javaClass
 
-    val field = findField(thisClass, name)
+    val field = XposedHelpers.findField(thisClass, name)
 
     when (fieldClass) {
         Boolean::class.java -> field.setBoolean(obj, value as Boolean)
@@ -154,7 +149,7 @@ private fun findField(clazz: Class<*>, fieldName: String) = XposedHelpers.findFi
 
 
 private val method_deoptimizeMethod = try {
-    XposedBridge::class.java.getDeclaredMethod("deoptimizeMethod", Member::class.java)
+    de.robv.android.xposed.XposedBridge::class.java.getDeclaredMethod("deoptimizeMethod", java.lang.reflect.Member::class.java)
 } catch (e: NoSuchMethodException) {
     null
 }

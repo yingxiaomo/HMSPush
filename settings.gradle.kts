@@ -12,6 +12,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven(url = "https://api.xposed.info/")
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/releases")
+        maven(url = "https://jitpack.io")
     }
 }
 

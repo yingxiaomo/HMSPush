@@ -28,7 +28,7 @@ val appVersionName by extra(latestTag)
 val androidTargetSdkVersion by extra(36)
 val androidMinSdkVersion by extra(27)
 
-val androidCompileSdkVersion by extra(36)
+val androidCompileSdkVersion by extra(37)
 val androidSourceCompatibility by extra(JavaVersion.VERSION_21)
 val androidTargetCompatibility by extra(JavaVersion.VERSION_21)
 

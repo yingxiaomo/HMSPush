@@ -26,4 +26,5 @@ dependencies {
     implementation(project(":common"))
     compileOnly(libs.xposed.api)
     implementation(libs.hiddenapibypass)
+    implementation("com.highcapable.yukihookapi:api:1.3.2")
 }

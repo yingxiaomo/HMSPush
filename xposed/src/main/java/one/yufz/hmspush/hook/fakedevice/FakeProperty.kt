@@ -1,6 +1,7 @@
 package one.yufz.hmspush.hook.fakedevice
 
 import android.os.Build
+import com.highcapable.yukihookapi.hook.factory.field
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,6 +31,17 @@ fun fakeProperty(vararg properties: Property) {
     fakeProperty(*properties.map { it.entry }.toTypedArray())
 }
 
+private fun setFinalStatic(clazz: Class<*>, fieldName: String, value: Any?) {
+    runCatching {
+        val field = clazz.getDeclaredField(fieldName)
+        field.isAccessible = true
+        field.set(null, value)
+        XLog.d(TAG, "修改 $fieldName 成功")
+    }.onFailure {
+        XLog.e(TAG, "修改 $fieldName 失败", it)
+    }
+}
+
 private val propertyMap: MutableMap<String, String> = HashMap()
 private val hooked = AtomicBoolean(false)
 
@@ -37,23 +49,23 @@ fun fakeProperty(vararg properties: Pair<String, String>) {
     propertyMap.putAll(properties)
 
     if (propertyMap.containsKey(Property.BRAND.key)) {
-        Build::class.java["BRAND"] = propertyMap[Property.BRAND.key]
+        setFinalStatic(Build::class.java, "BRAND", propertyMap[Property.BRAND.key])
     }
 
     if (propertyMap.containsKey(Property.MANUFACTURER.key)) {
-        Build::class.java["MANUFACTURER"] = propertyMap[Property.MANUFACTURER.key]
+        setFinalStatic(Build::class.java, "MANUFACTURER", propertyMap[Property.MANUFACTURER.key])
     }
 
     if (propertyMap.containsKey("ro.product.model")) {
-        Build::class.java["MODEL"] = propertyMap["ro.product.model"]
+        setFinalStatic(Build::class.java, "MODEL", propertyMap["ro.product.model"])
     }
 
     if (propertyMap.containsKey("ro.build.display.id")) {
-        Build::class.java["DISPLAY"] = propertyMap["ro.build.display.id"]
+        setFinalStatic(Build::class.java, "DISPLAY", propertyMap["ro.build.display.id"])
     }
 
     if (propertyMap.containsKey("ro.build.user")) {
-        Build::class.java["USER"] = propertyMap["ro.build.user"]
+        setFinalStatic(Build::class.java, "USER", propertyMap["ro.build.user"])
     }
 
     if (hooked.getAndSet(true)) return

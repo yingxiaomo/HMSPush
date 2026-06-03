@@ -27,7 +27,7 @@ object HookDummyActivityTask {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 if (activity.javaClass.name == HMS_CORE_DUMMY_ACTIVITY) {
                     val activityManager = AndroidAppHelper.currentApplication().getSystemService(ActivityManager::class.java)
-                    activityManager.appTasks.find { it.taskInfo.id == activity.taskId }?.let {
+                    activityManager.appTasks.find { it.taskInfo?.id == activity.taskId }?.let {
                         it.setExcludeFromRecents(false)
                         XLog.d(TAG, "task: ${it.taskInfo}")
                     }
