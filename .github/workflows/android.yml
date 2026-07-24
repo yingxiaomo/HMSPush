@@ -118,17 +118,16 @@ jobs:
         removeArtifacts: true
 
     - name: Release to XPosed Repo
-     if: github.ref_type == 'tag'
-     uses: ncipollo/release-action@v1
-     with:
-       tag: ${{ steps.tag.outputs.version }}
-       allowUpdates: true
-       owner: Xposed-Modules-Repo
-       repo: one.yufz.hmspush
-       token: ${{ secrets.GH_TOKEN }}
-       omitNameDuringUpdate: true
-       omitBodyDuringUpdate: true
-
+      if: github.ref_type == 'tag'
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.tag.outputs.version }}
+        allowUpdates: true
+        owner: Xposed-Modules-Repo
+        repo: one.yufz.hmspush
+        token: ${{ secrets.GH_TOKEN }}
+        omitNameDuringUpdate: true
+        omitBodyDuringUpdate: true
 
     - name: Update Continuous Release
       if: github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/master' && github.ref_type != 'tag'
