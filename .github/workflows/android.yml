@@ -118,14 +118,28 @@ jobs:
         removeArtifacts: true
 
     - name: Release to XPosed Repo
-      if: github.ref_type == 'tag'
+     if: github.ref_type == 'tag'
+     uses: ncipollo/release-action@v1
+     with:
+       tag: ${{ steps.tag.outputs.version }}
+       allowUpdates: true
+       owner: Xposed-Modules-Repo
+       repo: one.yufz.hmspush
+       token: ${{ secrets.GH_TOKEN }}
+       omitNameDuringUpdate: true
+       omitBodyDuringUpdate: true
+
+
+    - name: Update Continuous Release
+      if: github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/master' && github.ref_type != 'tag'
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ steps.tag.outputs.version }}
+        tag: continuous
+        name: Latest Build
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: "自动构建来自 master 分支的最新版本。"
+        artifacts: "app/build/outputs/apk/debug/*.apk,app/build/outputs/apk/release/*.apk"
         allowUpdates: true
-        owner: Xposed-Modules-Repo
-        repo: one.yufz.hmspush
-        token: ${{ secrets.GH_TOKEN }}
-        omitNameDuringUpdate: true
-        omitBodyDuringUpdate: true
-
+        removeArtifacts: true
+        replacesArtifacts: true
+        prerelease: true
