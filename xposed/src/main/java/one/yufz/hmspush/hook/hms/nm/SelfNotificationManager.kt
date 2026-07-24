@@ -31,7 +31,7 @@ class SelfNotificationManager : INotificationManager {
 
     override fun createNotificationChannels(packageName: String, userId: Int, channels: List<NotificationChannel>) {
         channels.forEach { channel ->
-            channel.setDescription(channel.name)
+            channel.setDescription(channel.name.toString())
             channel.name = getApplicationName(packageName) ?: packageName
         }
         notificationManager.createNotificationChannels(channels)
