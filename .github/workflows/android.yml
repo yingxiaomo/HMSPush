@@ -135,7 +135,7 @@ jobs:
       with:
         tag: continuous
         name: Latest Build
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GH_TOKEN }}
         body: "自动构建来自 master 分支的最新版本。"
         artifacts: "app/build/outputs/apk/debug/*.apk,app/build/outputs/apk/release/*.apk"
         allowUpdates: true
