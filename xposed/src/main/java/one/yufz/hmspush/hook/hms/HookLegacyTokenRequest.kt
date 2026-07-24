@@ -58,9 +58,11 @@ object HookLegacyTokenRequest {
     private fun mockReceive(process: Any, response: Any) {
         XLog.d(TAG, "mockReceive() called")
 
-        val context: Context = process["context"]
-        val packageName = process.get<Any>("clientIdentity").callMethod("getPackageName") as String
-        val token: String = response["token"]
+        val context: Context = process.get<Context>("context") ?: return
+        val clientIdentity = process.get<Any>("clientIdentity") ?: return
+        val packageName = clientIdentity.callMethod("getPackageName") as? String ?: return
+        val token: String = response.get<String>("token") ?: return
+
         val intent = Intent(HMS_CORE_PUSH_ACTION_REGISTRATION)
         intent.setPackage(packageName)
         intent.putExtra("device_token", token.toByteArray())

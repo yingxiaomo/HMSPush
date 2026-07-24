@@ -1,4 +1,4 @@
-package one.yufz.hmspush.hook.hms.nm
+﻿package one.yufz.hmspush.hook.hms.nm
 
 import android.app.AndroidAppHelper
 import android.app.Notification
@@ -8,7 +8,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.service.notification.StatusBarNotification
 import one.yufz.hmspush.hook.XLog
-import one.yufz.xposed.set
 
 class SelfNotificationManager : INotificationManager {
     companion object {
@@ -32,7 +31,7 @@ class SelfNotificationManager : INotificationManager {
 
     override fun createNotificationChannels(packageName: String, userId: Int, channels: List<NotificationChannel>) {
         channels.forEach { channel ->
-            channel["mDesc"] = channel.name
+            channel.setDescription(channel.name)
             channel.name = getApplicationName(packageName) ?: packageName
         }
         notificationManager.createNotificationChannels(channels)
@@ -42,8 +41,8 @@ class SelfNotificationManager : INotificationManager {
         try {
             val pm = AndroidAppHelper.currentApplication().packageManager
             return pm.getApplicationInfo(packageName, 0).loadLabel(pm)
-        } catch (e: Throwable) {
-            XLog.e(TAG, "getApplicationName: error", e)
+        } catch (t: Throwable) {
+            XLog.e(TAG, "getApplicationName: error", t)
             return null
         }
     }
@@ -71,3 +70,4 @@ class SelfNotificationManager : INotificationManager {
         }
     }
 }
+

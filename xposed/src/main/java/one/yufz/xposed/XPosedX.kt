@@ -1,6 +1,7 @@
-package one.yufz.xposed
+﻿package one.yufz.xposed
 
 import de.robv.android.xposed.XposedHelpers
+import one.yufz.hmspush.hook.XLog
 import java.lang.reflect.Method
 
 fun Any.callMethod(methodName: String, vararg args: Any): Any? =
@@ -103,45 +104,51 @@ fun ClassLoader.findClass(className: String): Class<*> = XposedHelpers.findClass
 
 inline fun <reified T> Any.getOrNull(name: String): T? = getField(name, T::class.java)
 
-inline operator fun <reified T> Any.get(name: String): T = getField(name, T::class.java)!!
+inline operator fun <reified T> Any.get(name: String): T? = getField(name, T::class.java)
 
 inline operator fun <reified T> Any.set(name: String, value: T?) = setField(name, value, T::class.java)
 
 fun <T> Any.getField(name: String, fieldClazz: Class<T>): T? {
     val obj = if (this is Class<*>) null else this
     val thisClass = if (this is Class<*>) this else this.javaClass
-    val field = XposedHelpers.findField(thisClass, name)
-
-    val value = when (fieldClazz) {
-        Boolean::class.java -> field.getBoolean(obj)
-        Byte::class.java -> field.getByte(obj)
-        Char::class.java -> field.getChar(obj)
-        Double::class.java -> field.getDouble(obj)
-        Float::class.java -> field.getFloat(obj)
-        Int::class.java -> field.getInt(obj)
-        Long::class.java -> field.getLong(obj)
-        Short::class.java -> field.getShort(obj)
-        else -> field.get(obj)
+    return try {
+        val field = XposedHelpers.findField(thisClass, name)
+        val value = when (fieldClazz) {
+            Boolean::class.java -> field.getBoolean(obj)
+            Byte::class.java -> field.getByte(obj)
+            Char::class.java -> field.getChar(obj)
+            Double::class.java -> field.getDouble(obj)
+            Float::class.java -> field.getFloat(obj)
+            Int::class.java -> field.getInt(obj)
+            Long::class.java -> field.getLong(obj)
+            Short::class.java -> field.getShort(obj)
+            else -> field.get(obj)
+        }
+        value as? T?
+    } catch (t: Throwable) {
+        XLog.e("XPosedX", "getField failed: ${thisClass.name}.$name", t)
+        null
     }
-    return value as? T?
 }
 
 fun <T> Any.setField(name: String, value: T?, fieldClass: Class<T>) {
     val obj = if (this is Class<*>) null else this
     val thisClass = if (this is Class<*>) this else this.javaClass
-
-    val field = XposedHelpers.findField(thisClass, name)
-
-    when (fieldClass) {
-        Boolean::class.java -> field.setBoolean(obj, value as Boolean)
-        Byte::class.java -> field.setByte(obj, value as Byte)
-        Char::class.java -> field.setChar(obj, value as Char)
-        Double::class.java -> field.setDouble(obj, value as Double)
-        Float::class.java -> field.setFloat(obj, value as Float)
-        Int::class.java -> field.setInt(obj, value as Int)
-        Long::class.java -> field.setLong(obj, value as Long)
-        Short::class.java -> field.setShort(obj, value as Short)
-        else -> field.set(obj, value as T)
+    try {
+        val field = XposedHelpers.findField(thisClass, name)
+        when (fieldClass) {
+            Boolean::class.java -> field.setBoolean(obj, value as Boolean)
+            Byte::class.java -> field.setByte(obj, value as Byte)
+            Char::class.java -> field.setChar(obj, value as Char)
+            Double::class.java -> field.setDouble(obj, value as Double)
+            Float::class.java -> field.setFloat(obj, value as Float)
+            Int::class.java -> field.setInt(obj, value as Int)
+            Long::class.java -> field.setLong(obj, value as Long)
+            Short::class.java -> field.setShort(obj, value as Short)
+            else -> field.set(obj, value as T)
+        }
+    } catch (t: Throwable) {
+        XLog.e("XPosedX", "setField failed: ${thisClass.name}.$name", t)
     }
 }
 

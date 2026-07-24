@@ -1,4 +1,4 @@
-package one.yufz.hmspush.hook.system
+﻿package one.yufz.hmspush.hook.system
 
 import android.app.AndroidAppHelper
 import android.app.NotificationManager
@@ -38,9 +38,12 @@ class HookSystemService {
             doAfter {
                 val context = thisObject.callMethod("getContext") as Context
                 KeepHmsAlive(context).start()
-                val stubClass = thisObject.get<Any>("mService").javaClass
-                hookPermission(stubClass)
-                hookSystemReadyFlag(stubClass)
+                val stubService = thisObject.get<Any>("mService")
+                if (stubService != null) {
+                    val stubClass = stubService.javaClass
+                    hookPermission(stubClass)
+                    hookSystemReadyFlag(stubClass)
+                }
             }
         }
 
