@@ -69,6 +69,9 @@ class HookHMS {
         HookForegroundService.hook(lpparam.classLoader)
 
         HookDummyActivity.hook(lpparam.classLoader)
+
+        // Register test notification receiver after HMS Core service is created
+        TestNotification.register()
     }
 
     private fun hookLegacyPush(classLoader: ClassLoader) {

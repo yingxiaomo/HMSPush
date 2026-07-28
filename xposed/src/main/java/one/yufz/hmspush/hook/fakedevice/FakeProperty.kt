@@ -4,6 +4,7 @@ import android.os.Build
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.*
 import java.util.concurrent.atomic.AtomicBoolean
+import java.lang.reflect.Modifier
 
 private const val TAG = "FakeProperties"
 
@@ -12,6 +13,8 @@ enum class Property(val entry: Pair<String, String>) {
     EMUI_VERSION("ro.build.version.emui" to "EmotionUI_8.0.0"),
     BRAND("ro.product.brand" to "Huawei"),
     MANUFACTURER("ro.product.manufacturer" to "HUAWEI"),
+    MODEL("ro.product.model" to "HUAWEI P30 Pro"),
+    DISPLAY("ro.build.display.id" to "EmotionUI_8.0.0"),
     MIUI_VERSION("ro.miui.ui.version.name" to "");
 
     val key: String
@@ -37,28 +40,28 @@ fun fakeProperty(vararg properties: Pair<String, String>) {
     propertyMap.putAll(properties)
 
     if (propertyMap.containsKey(Property.BRAND.key)) {
-        Build::class.java["BRAND"] = propertyMap[Property.BRAND.key]
+        setFinalStatic(Build::class.java, "BRAND", propertyMap[Property.BRAND.key])
     }
 
     if (propertyMap.containsKey(Property.MANUFACTURER.key)) {
-        Build::class.java["MANUFACTURER"] = propertyMap[Property.MANUFACTURER.key]
+        setFinalStatic(Build::class.java, "MANUFACTURER", propertyMap[Property.MANUFACTURER.key])
     }
 
-    if (propertyMap.containsKey("ro.product.model")) {
-        Build::class.java["MODEL"] = propertyMap["ro.product.model"]
+    if (propertyMap.containsKey(Property.MODEL.key)) {
+        setFinalStatic(Build::class.java, "MODEL", propertyMap[Property.MODEL.key])
     }
 
-    if (propertyMap.containsKey("ro.build.display.id")) {
-        Build::class.java["DISPLAY"] = propertyMap["ro.build.display.id"]
+    if (propertyMap.containsKey(Property.DISPLAY.key)) {
+        setFinalStatic(Build::class.java, "DISPLAY", propertyMap[Property.DISPLAY.key])
     }
 
     if (propertyMap.containsKey("ro.build.user")) {
-        Build::class.java["USER"] = propertyMap["ro.build.user"]
+        setFinalStatic(Build::class.java, "USER", propertyMap["ro.build.user"])
     }
 
     if (hooked.getAndSet(true)) return
 
-    val classSystemProperties = Build::class.java.classLoader.findClass("android.os.SystemProperties")
+    val classSystemProperties = Build::class.java.classLoader!!.findClass("android.os.SystemProperties")
 
     val callback: HookContext.() -> Unit = {
         doBefore {
@@ -83,5 +86,22 @@ fun fakeProperty(vararg properties: Pair<String, String>) {
                 }
             }
         }
+    }
+}
+
+private fun setFinalStatic(clazz: Class<*>, fieldName: String, value: Any?) {
+    try {
+        val field = clazz.getDeclaredField(fieldName)
+        field.isAccessible = true
+
+        // Remove final modifier so we can overwrite the field
+        val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("accessFlags")
+        modifiersField.isAccessible = true
+        modifiersField.setInt(field, field.modifiers and Modifier.FINAL.inv())
+
+        field.set(null, value)
+        XLog.d(TAG, "修改 $fieldName 成功")
+    } catch (t: Throwable) {
+        XLog.e(TAG, "修改 $fieldName 失败", t)
     }
 }
