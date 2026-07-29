@@ -1,4 +1,5 @@
 package one.yufz.hmspush.hook.hms.dummy
+import one.yufz.hmspush.hook.App
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -27,9 +28,12 @@ object HookDummyActivityTask {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 if (activity.javaClass.name == HMS_CORE_DUMMY_ACTIVITY) {
                     val activityManager = App.current().getSystemService(ActivityManager::class.java)
-                    activityManager.appTasks.find { it.taskInfo.id == activity.taskId }?.let {
-                        it.setExcludeFromRecents(false)
-                        XLog.d(TAG, "task: ${it.taskInfo}")
+                    val tasks = activityManager?.appTasks ?: emptyList()
+                    for (task in tasks) {
+                        if (task.taskInfo.id == activity.taskId) {
+                            task.setExcludeFromRecents(false)
+                            XLog.d(TAG, "task: ${task.taskInfo}")
+                        }
                     }
                 }
             }

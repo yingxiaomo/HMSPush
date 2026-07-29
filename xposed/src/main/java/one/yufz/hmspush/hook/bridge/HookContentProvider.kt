@@ -1,4 +1,5 @@
 package one.yufz.hmspush.hook.bridge
+import one.yufz.hmspush.hook.App
 
 import android.net.Uri
 import android.os.Binder

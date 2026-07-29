@@ -1,4 +1,5 @@
 package one.yufz.hmspush.hook.hms
+import one.yufz.hmspush.hook.App
 
 
 import android.app.Notification

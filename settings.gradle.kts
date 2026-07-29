@@ -19,3 +19,4 @@ rootProject.name = "HMSPush"
 include(":app")
 include(":xposed")
 include(":common")
+include(":libxposed-api:api")

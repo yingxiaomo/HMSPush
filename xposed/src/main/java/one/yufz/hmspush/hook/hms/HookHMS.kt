@@ -7,6 +7,7 @@ import android.database.CursorWindow
 import android.os.Build
 import com.huawei.android.app.NotificationManagerEx
 import dalvik.system.DexClassLoader
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
 import one.yufz.hmspush.hook.bridge.HookContentProvider
 import one.yufz.hmspush.hook.hms.dummy.HookDummyActivity
@@ -18,11 +19,10 @@ class HookHMS {
         private const val TAG = "HookHMS"
     }
 
-    fun hook(lpparam: XC_LoadPackage.LoadPackageParam) {
+    fun hook(lpparam: LPP) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             HiddenApiBypass.addHiddenApiExemptions("")
         }
-        //android.app.PendingIntent.getActivity(android.content.Context, int, android.content.Intent, int)
         PendingIntent::class.java.hookMethod("getActivity", Context::class.java, Int::class.java, Intent::class.java, Int::class.java) {
             doBefore {
                 val intent = args[2] as Intent
@@ -68,7 +68,6 @@ class HookHMS {
 
         HookDummyActivity.hook(lpparam.classLoader)
 
-        // Register test notification receiver after HMS Core service is created
         TestNotification.register()
     }
 
@@ -77,7 +76,7 @@ class HookHMS {
 
         try {
             classLoader.findClass("com.huawei.hms.pushnc.entity.PushSelfShowMessage")
-        } catch (e: ClassNotFoundError) {
+        } catch (e: ClassNotFoundException) {
             XLog.d(TAG, "PushSelfShowMessage not Found, stop hook")
             return
         }
@@ -93,7 +92,7 @@ class HookHMS {
         }
     }
 
-    private fun fakeFingerprint(lpparam: XC_LoadPackage.LoadPackageParam) {
+    private fun fakeFingerprint(lpparam: LPP) {
         lpparam.classLoader.findClass("com.huawei.hms.auth.api.CheckFingerprintRequest")
             .hookMethod("parseEntity", String::class.java) {
                 doBefore {

@@ -1,0 +1,3 @@
+hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenApiBypass" }
+androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
+mavericks = { module = "com.airbnb.android:mavericks", version.ref = "mavericks" }

@@ -9,6 +9,7 @@ import one.yufz.xposed.findClass
 import one.yufz.xposed.get
 import one.yufz.xposed.hook
 import one.yufz.xposed.hookMethod
+import java.lang.reflect.Method
 
 object HookLegacyTokenRequest {
     private const val TAG = "HookLegacyTokenRequest"
@@ -25,7 +26,6 @@ object HookLegacyTokenRequest {
             doBefore {
                 val uri = args[0] as String
                 if (uri == "push.gettoken") {
-                    unhook()
                     hookGetTokenProcess(args[1] as Class<*>)
                 }
             }
@@ -38,12 +38,11 @@ object HookLegacyTokenRequest {
         val classIMessageEntity = classLoader.findClass("com.huawei.hms.support.api.transport.IMessageEntity")
         val classTokenResp = classLoader.findClass("com.huawei.hms.support.api.entity.push.TokenResp")
 
-        arrayOf(
-            *XposedHelpers.findMethodsByExactParameters(clazz.superclass, Void.TYPE, classIMessageEntity, Int::class.java),
-            *XposedHelpers.findMethodsByExactParameters(clazz.superclass, Void.TYPE, classIMessageEntity, Class::class.java, Int::class.java)
-        ).forEach { method ->
-            XLog.d(TAG, "hookGetTokenProcess() called with: method = $method")
+        val methods = findMethodsByParams(clazz.superclass, Void.TYPE, classIMessageEntity, Int::class.java) +
+                findMethodsByParams(clazz.superclass, Void.TYPE, classIMessageEntity, Class::class.java, Int::class.java)
 
+        for (method in methods) {
+            XLog.d(TAG, "hookGetTokenProcess() called with: method = $method")
             method.hook {
                 doAfter {
                     if (args[0].javaClass == classTokenResp) {
@@ -52,6 +51,21 @@ object HookLegacyTokenRequest {
                 }
             }
         }
+    }
+
+    private fun findMethodsByParams(clazz: Class<*>, returnType: Class<*>, vararg paramTypes: Class<*>): List<Method> {
+        val result = mutableListOf<Method>()
+        for (method in clazz.declaredMethods) {
+            if (method.returnType != returnType) continue
+            val types = method.parameterTypes
+            if (types.size != paramTypes.size) continue
+            var match = true
+            for (i in paramTypes.indices) {
+                if (types[i] != paramTypes[i]) { match = false; break }
+            }
+            if (match) result.add(method)
+        }
+        return result
     }
 
     private fun mockReceive(process: Any, response: Any) {

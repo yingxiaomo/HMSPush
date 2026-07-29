@@ -40,6 +40,7 @@ compose-html-text = { group = "de.charlex.compose", name = "html-text", version.
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
 xposed-api = { group = "de.robv.android.xposed", name = "api", version.ref = "xposedApi" }
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenApiBypass" }
+androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
 mavericks = { module = "com.airbnb.android:mavericks", version.ref = "mavericks" }
 mavericks-compose = { module = "com.airbnb.android:mavericks-compose", version.ref = "mavericks" }
 

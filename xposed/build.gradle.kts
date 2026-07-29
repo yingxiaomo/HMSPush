@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-
 }
 
 android {
@@ -24,6 +23,6 @@ android {
 
 dependencies {
     implementation(project(":common"))
-    compileOnly(libs.xposed.api)
+    implementation(project(":libxposed-api:api"))
     implementation(libs.hiddenapibypass)
 }

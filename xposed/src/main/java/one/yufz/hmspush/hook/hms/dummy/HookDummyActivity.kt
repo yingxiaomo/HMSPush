@@ -11,12 +11,23 @@ import one.yufz.hmspush.common.HMS_CORE_DUMMY_ACTIVITY
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.findClass
 import one.yufz.xposed.hookMethod
-
+import java.util.WeakHashMap
 
 object HookDummyActivity {
     private const val TAG = "HookDummyActivity"
+    private val instanceFields = WeakHashMap<Any, MutableMap<String, Any?>>()
 
-    private const val KEY_IGNORE_FIRST_FINISH = "ignore_first_finish"
+    private fun setAdditionalInstanceField(obj: Any, key: String, value: Any?) {
+        instanceFields.getOrPut(obj) { mutableMapOf() }[key] = value
+    }
+
+    private fun getAdditionalInstanceField(obj: Any, key: String): Any? {
+        return instanceFields[obj]?.get(key)
+    }
+
+    private fun removeAdditionalInstanceField(obj: Any, key: String) {
+        instanceFields[obj]?.remove(key)
+    }
 
     fun hook(classLoader: ClassLoader) {
         XLog.d(TAG, "hook() called")
@@ -27,24 +38,20 @@ object HookDummyActivity {
         classDummyActivity.hookMethod("onCreate", Bundle::class.java) {
             doBefore {
                 XLog.d(TAG, "onCreate doBefore() called")
-                XposedHelpers.setAdditionalInstanceField(thisObject, KEY_IGNORE_FIRST_FINISH, true)
+                setAdditionalInstanceField(thisObject!!, KEY_IGNORE_FIRST_FINISH, true)
                 val activity = thisObject as Activity
                 activity.setTheme(android.R.style.Theme_Material_Light_NoActionBar)
                 if (args[0] != null) {
                     args[0] = null
                 }
             }
-
             doAfter {
-                val activity = this.thisObject as Activity
+                val activity = thisObject as Activity
                 val intent = activity.intent
                 val hooked = intent.getBooleanExtra(FLAG_HMS_DUMMY_HOOKED, false)
-
                 XLog.d(TAG, "onCreate doAfter() called, hooked = $hooked")
-
                 if (hooked) {
                     makeActivityFullscreen(thisObject as Activity)
-
                     addDummyFragment(activity)
                 }
             }
@@ -52,18 +59,15 @@ object HookDummyActivity {
 
         classDummyActivity.hookMethod("finish") {
             doBefore {
-                val activity = this.thisObject as Activity
+                val activity = thisObject as Activity
                 val hooked = activity.intent.getBooleanExtra(FLAG_HMS_DUMMY_HOOKED, false)
-                val ignoreFirstFinish = XposedHelpers.getAdditionalInstanceField(activity, KEY_IGNORE_FIRST_FINISH) != null
-
-                XLog.d(TAG, "finish() called, hooked = $hooked , ignoreFirstFinish = $ignoreFirstFinish")
-
+                val ignoreFirstFinish = getAdditionalInstanceField(activity, KEY_IGNORE_FIRST_FINISH) != null
+                XLog.d(TAG, "finish() called, hooked = $hooked, ignoreFirstFinish = $ignoreFirstFinish")
                 if (hooked && ignoreFirstFinish) {
                     result = null
                 }
-
                 if (ignoreFirstFinish) {
-                    XposedHelpers.removeAdditionalInstanceField(activity, KEY_IGNORE_FIRST_FINISH)
+                    removeAdditionalInstanceField(activity, KEY_IGNORE_FIRST_FINISH)
                 }
             }
         }
