@@ -86,7 +86,9 @@ private fun Executable.doHook(callback: HookCallback) {
     val ctx = HookContext()
     ctx.callback = callback
     try {
-        api.hook(this).intercept(HookerImpl(ctx))
+        api.hook(this)
+            .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+            .intercept(HookerImpl(ctx))
     } catch (_: Throwable) {
         // hook failed silently
     }
