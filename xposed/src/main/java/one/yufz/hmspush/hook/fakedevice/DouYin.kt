@@ -1,6 +1,6 @@
 package one.yufz.hmspush.hook.fakedevice
 
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
 import one.yufz.hmspush.hook.XLog.logMethod
 import one.yufz.xposed.findClass
@@ -12,7 +12,7 @@ class DouYin : Common() {
         private const val TAG = "DouYin"
     }
 
-    override fun fake(lpparam: XC_LoadPackage.LoadPackageParam): Boolean {
+    override fun fake(lpparam: LPP): Boolean {
         super.fake(lpparam)
         //public java.lang.String com.bytedance.common.network.DefaultNetWorkClient.post(java.lang.String,java.util.List,java.util.Map,com.bytedance.common.utility.NetworkClient$ReqContext)
         val classAppLogNetworkClient = lpparam.classLoader.findClass("com.ss.android.ugc.aweme.statistic.AppLogNetworkClient")

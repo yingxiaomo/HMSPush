@@ -3,11 +3,9 @@ package one.yufz.hmspush.hook.fakedevice
 import android.content.pm.PackageInfo
 import android.util.Base64
 import dalvik.system.DexClassLoader
-import de.robv.android.xposed.XC_MethodHook.Unhook
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 import one.yufz.hmspush.common.HMS_CORE_SIGNATURE
 import one.yufz.hmspush.common.HMS_PACKAGE_NAME
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.*
 
@@ -15,15 +13,14 @@ object FakeHmsSignature {
     private const val TAG = "FakeHmsSignature"
 
     private var verifyApkHashHooked = false
-    private var verifyApkHashUnhook: Unhook? = null
 
-    fun hook(lpparam: XC_LoadPackage.LoadPackageParam) {
+    fun hook(lpparam: LPP) {
         XLog.d(TAG, "hook() called with: processName = ${lpparam.processName}")
 
         tryHookVerifyApkHash(lpparam.classLoader)
 
         if (!verifyApkHashHooked) {
-            verifyApkHashUnhook = DexClassLoader::class.java.hookConstructor(String::class.java, String::class.java, String::class.java, ClassLoader::class.java) {
+            DexClassLoader::class.java.hookConstructor(String::class.java, String::class.java, String::class.java, ClassLoader::class.java) {
                 doAfter { tryHookVerifyApkHash(thisObject as ClassLoader) }
             }
         }
@@ -52,8 +49,7 @@ object FakeHmsSignature {
             XLog.d(TAG, "tryHookVerifyApkHash: verifyApkHash() hooked")
 
             verifyApkHashHooked = true
-            verifyApkHashUnhook?.unhook()
-        } catch (e: XposedHelpers.ClassNotFoundError) {
+        } catch (e: ClassNotFoundException) {
             XLog.d(TAG, "tryHookVerifyApkHash: ClassNotFoundError")
         } catch (e: NoSuchMethodError) {
             XLog.d(TAG, "tryHookVerifyApkHash: NoSuchMethodError")

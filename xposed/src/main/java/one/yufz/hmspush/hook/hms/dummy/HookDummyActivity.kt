@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
-import de.robv.android.xposed.XposedHelpers
 import one.yufz.hmspush.common.FLAG_HMS_DUMMY_HOOKED
 import one.yufz.hmspush.common.HMS_CORE_DUMMY_ACTIVITY
 import one.yufz.hmspush.hook.XLog

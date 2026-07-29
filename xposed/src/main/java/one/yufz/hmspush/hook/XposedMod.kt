@@ -1,7 +1,8 @@
 package one.yufz.hmspush.hook
 
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import io.github.libxposed.api.XposedModule
+import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
+import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
 import one.yufz.hmspush.common.ANDROID_PACKAGE_NAME
 import one.yufz.hmspush.common.HMS_CORE_PROCESS
 import one.yufz.hmspush.common.HMS_PACKAGE_NAME
@@ -9,42 +10,51 @@ import one.yufz.hmspush.common.doOnce
 import one.yufz.hmspush.hook.fakedevice.FakeDevice
 import one.yufz.hmspush.hook.hms.HookHMS
 import one.yufz.hmspush.hook.system.HookSystemService
+import one.yufz.xposed.initXposedInterface
 
-class XposedMod : IXposedHookLoadPackage {
+class XposedMod : XposedModule() {
     companion object {
         private const val TAG = "XposedMod"
+        private var systemHooked = false
     }
 
-    @Throws(Throwable::class)
-    override fun handleLoadPackage(lpparam: LoadPackageParam) {
-        doOnce(lpparam.classLoader) {
-            hook(lpparam)
-        }
+    override fun onModuleLoaded(param: ModuleLoadedParam) {
+        initXposedInterface(this)
     }
 
-    private fun hook(lpparam: LoadPackageParam) {
-        XLog.d(TAG, "Loaded app: " + lpparam.packageName + " process:" + lpparam.processName)
+    override fun onPackageReady(param: PackageReadyParam) {
+        val classLoader = param.classLoader
+        val packageName = param.packageName
+        val processName = param.applicationInfo.processName ?: packageName
 
-        if (lpparam.processName == null) return
+        XLog.d(TAG, "Loaded app: $packageName process:$processName")
 
-        if (lpparam.processName == ANDROID_PACKAGE_NAME) {
-            if (lpparam.packageName == ANDROID_PACKAGE_NAME) {
-                HookSystemService().hook(lpparam.classLoader)
+        if (processName.startsWith("android")) {
+            if (!systemHooked) {
+                systemHooked = true
+                HookSystemService().hook(classLoader)
             }
             return
         }
 
-        if (lpparam.packageName == HMS_PACKAGE_NAME) {
-            if (lpparam.processName == HMS_CORE_PROCESS) {
+        if (packageName == HMS_PACKAGE_NAME) {
+            if (processName == HMS_CORE_PROCESS) {
+                val lpparam = LPP(packageName, processName, classLoader)
                 HookHMS().hook(lpparam)
             }
             return
         }
 
-        if (lpparam.packageName == "com.android.systemui") {
-            return
-        }
+        if (packageName == "com.android.systemui") return
 
-        FakeDevice.fake(lpparam)
+        val lpparam = LPP(packageName, processName, classLoader)
+        doOnce(classLoader) { FakeDevice.fake(lpparam) }
     }
 }
+
+// Minimal LoadPackageParam stand-in so existing hook code compiles without changes
+data class LPP(
+    val packageName: String,
+    val processName: String,
+    val classLoader: ClassLoader
+)

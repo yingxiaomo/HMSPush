@@ -1,6 +1,6 @@
 package one.yufz.hmspush.hook.hms
 
-import android.app.AndroidAppHelper
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -30,7 +30,7 @@ object TestNotification {
         // Post to main looper to ensure Application is ready
         Handler(Looper.getMainLooper()).post {
             try {
-                val context = AndroidAppHelper.currentApplication()
+                val context = App.current()
                 val filter = IntentFilter(TEST_ACTION)
                 context.registerReceiver(object : BroadcastReceiver() {
                     override fun onReceive(ctx: Context, intent: Intent) {
@@ -59,7 +59,7 @@ object TestNotification {
         XLog.d(TAG, "sendTestNotification() called: package=$packageName, title=$title")
 
         try {
-            val context = AndroidAppHelper.currentApplication()
+            val context = App.current()
 
             // Ensure test channel exists
             val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

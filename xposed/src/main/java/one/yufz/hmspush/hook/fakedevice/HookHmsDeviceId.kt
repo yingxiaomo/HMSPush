@@ -2,14 +2,14 @@ package one.yufz.hmspush.hook.fakedevice
 
 import android.content.ContentResolver
 import android.provider.Settings
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.hookMethod
 
 object HookHmsDeviceId {
     private const val TAG = "HookHmsDeviceId"
 
-    fun hook(lpparam: XC_LoadPackage.LoadPackageParam) {
+    fun hook(lpparam: LPP) {
         XLog.d(TAG, "hook() called with: processName = ${lpparam.processName}")
 
         Settings.Global::class.java.hookMethod("getString", ContentResolver::class.java, String::class.java) {

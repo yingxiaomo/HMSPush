@@ -1,9 +1,9 @@
 package one.yufz.hmspush.hook.fakedevice
 
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import one.yufz.hmspush.hook.LPP
 
 class FakeEmuiOnly : IFakeDevice {
-    override fun fake(lpparam: XC_LoadPackage.LoadPackageParam): Boolean {
+    override fun fake(lpparam: LPP): Boolean {
         fakeProperty(Property.EMUI_VERSION)
         return true
     }

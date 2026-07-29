@@ -1,19 +1,15 @@
 package one.yufz.hmspush.hook.fakedevice
 
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
-import one.yufz.xposed.findClass
-import java.lang.reflect.Method
+import one.yufz.xposed.*
 
 open class XGPush : IFakeDevice {
     companion object {
         private const val TAG = "FakeForXGPush"
     }
 
-    override fun fake(lpparam: XC_LoadPackage.LoadPackageParam): Boolean {
+    override fun fake(lpparam: LPP): Boolean {
         val classLoader = lpparam.classLoader
 
         XLog.d(TAG, "fake() called with: classLoader = $classLoader")
@@ -22,7 +18,7 @@ open class XGPush : IFakeDevice {
             val classChannelUtils = classLoader.findClass("com.tencent.tpns.baseapi.base.util.ChannelUtils")
             fakeChannels(classChannelUtils)
             true
-        } catch (e: XposedHelpers.ClassNotFoundError) {
+        } catch (e: ClassNotFoundException) {
             XLog.e(TAG, "fake ClassNotFoundError", e)
             false
         } catch (e: Throwable) {
@@ -34,22 +30,21 @@ open class XGPush : IFakeDevice {
     private fun fakeChannels(classChannelUtils: Class<*>): Boolean {
         XLog.d(TAG, "fakeChannels() called")
 
-        classChannelUtils.declaredMethods.forEach {
-            XposedBridge.hookMethod(it, object : XC_MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    val method = param.method as Method
-                    if (method.name == "isBrandHuaWei") {
-                        param.result = true
-                    } else if (method.returnType == Boolean::class.java) {
-                        param.result = false
-                    } else if (method.returnType == String::class.java) {
-                        param.result = ""
-                    }
+        classChannelUtils.declaredMethods.forEach { method ->
+            if (method.name == "isBrandHuaWei") {
+                method.hook {
+                    replace { true }
                 }
-            })
+            } else if (method.returnType == Boolean::class.java) {
+                method.hook {
+                    replace { false }
+                }
+            } else if (method.returnType == String::class.java) {
+                method.hook {
+                    replace { "" }
+                }
+            }
         }
         return true
     }
-
-
 }

@@ -1,6 +1,6 @@
 package one.yufz.hmspush.hook.hms
 
-import android.app.AndroidAppHelper
+
 import android.os.Binder
 import android.os.Handler
 import android.os.Looper
@@ -22,15 +22,15 @@ object HmsPushService : HmsPushInterface.Stub() {
     private const val TAG = "HmsPushService"
 
     fun notifyHmsPushServiceCreated() {
-        BridgeUri.HMS_PUSH_SERVICE.notifyContentChanged(AndroidAppHelper.currentApplication())
+        BridgeUri.HMS_PUSH_SERVICE.notifyContentChanged(App.current())
     }
 
     fun notifyPushSignChanged() {
-        BridgeUri.PUSH_SIGN.notifyContentChanged(AndroidAppHelper.currentApplication())
+        BridgeUri.PUSH_SIGN.notifyContentChanged(App.current())
     }
 
     fun notifyPushHistoryChanged() {
-        BridgeUri.PUSH_HISTORY.notifyContentChanged(AndroidAppHelper.currentApplication())
+        BridgeUri.PUSH_HISTORY.notifyContentChanged(App.current())
     }
 
     override fun getModuleVersion(): ModuleVersionModel {

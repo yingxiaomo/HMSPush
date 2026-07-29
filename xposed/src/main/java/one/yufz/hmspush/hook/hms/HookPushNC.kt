@@ -1,10 +1,9 @@
 package one.yufz.hmspush.hook.hms
 
-import android.app.AndroidAppHelper
+
 import android.app.Notification
 import android.app.NotificationChannel
 import com.huawei.android.app.NotificationManagerEx
-import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.findClass
 import one.yufz.xposed.hookMethod
@@ -43,7 +42,7 @@ object HookPushNC {
         //boolean cancelNotification(HsfApi hsfApi, String packageName, int id, int userId)
         classHwNotificationManager.hookMethod("cancelNotification", classHsfApi, String::class.java, Int::class.java, Int::class.java) {
             replace {
-                NotificationManagerEx.cancelNotification(AndroidAppHelper.currentApplication(), args[1] as String, args[2] as Int)
+                NotificationManagerEx.cancelNotification(App.current(), args[1] as String, args[2] as Int)
                 return@replace true
             }
 
@@ -71,7 +70,7 @@ object HookPushNC {
         //boolean notify(HsfApi hsfApi, String packageName, int id, int userId, Notification notification)
         classHwNotificationManager.hookMethod("notify", classHsfApi, String::class.java, Int::class.java, Int::class.java, Notification::class.java) {
             replace {
-                NotificationManagerEx.notify(AndroidAppHelper.currentApplication(), args[1] as String, args[2] as Int, args[4] as Notification)
+                NotificationManagerEx.notify(App.current(), args[1] as String, args[2] as Int, args[4] as Notification)
                 return@replace true
             }
         }

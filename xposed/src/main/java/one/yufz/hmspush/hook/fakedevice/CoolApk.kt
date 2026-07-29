@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import de.robv.android.xposed.callbacks.XC_LoadPackage
+import one.yufz.hmspush.hook.LPP
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.hookMethod
 
@@ -13,7 +13,7 @@ class CoolApk : XGPush() {
         private const val TAG = "CoolApk"
     }
 
-    override fun fake(lpparam: XC_LoadPackage.LoadPackageParam): Boolean {
+    override fun fake(lpparam: LPP): Boolean {
         Application::class.java.hookMethod("attach", Context::class.java) {
             doAfter {
                 super.fake(lpparam)

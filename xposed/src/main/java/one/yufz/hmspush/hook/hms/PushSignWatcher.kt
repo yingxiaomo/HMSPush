@@ -1,6 +1,6 @@
 package one.yufz.hmspush.hook.hms
 
-import android.app.AndroidAppHelper
+
 import android.content.Context
 import android.content.SharedPreferences
 import one.yufz.hmspush.common.BridgeUri
@@ -16,7 +16,7 @@ object PushSignWatcher : SharedPreferences.OnSharedPreferenceChangeListener {
     fun watch() {
         XLog.d(TAG, "watch() called")
 
-        val pushSignPref = AndroidAppHelper.currentApplication().createDeviceProtectedStorageContext()
+        val pushSignPref = App.current().createDeviceProtectedStorageContext()
             .getSharedPreferences("PushSign", Context.MODE_PRIVATE)
 
         logPushSign(pushSignPref)
@@ -49,7 +49,7 @@ object PushSignWatcher : SharedPreferences.OnSharedPreferenceChangeListener {
     }
 
     private fun notifyChange() {
-        AndroidAppHelper.currentApplication().contentResolver.notifyChange(BridgeUri.PUSH_SIGN.toUri(), null, false)
+        App.current().contentResolver.notifyChange(BridgeUri.PUSH_SIGN.toUri(), null, false)
         HmsPushService.notifyPushSignChanged()
     }
 

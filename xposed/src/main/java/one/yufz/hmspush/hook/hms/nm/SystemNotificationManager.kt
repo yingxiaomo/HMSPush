@@ -1,6 +1,6 @@
 package one.yufz.hmspush.hook.hms.nm
 
-import android.app.AndroidAppHelper
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,7 +8,6 @@ import android.content.Context
 import android.os.Build
 import android.service.notification.StatusBarNotification
 import android.util.Log
-import de.robv.android.xposed.XposedHelpers
 import one.yufz.hmspush.common.ANDROID_PACKAGE_NAME
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.callMethod
@@ -29,7 +28,7 @@ class SystemNotificationManager : INotificationManager {
     private val notificationManager: Any = NotificationManager::class.java.callStaticMethod("getService")!!
 
     private fun getUid(packageName: String): Int {
-        return AndroidAppHelper.currentApplication().packageManager.getPackageUid(packageName, 0)
+        return App.current().packageManager.getPackageUid(packageName, 0)
     }
 
     private fun getUserId(context: Context): Int {
