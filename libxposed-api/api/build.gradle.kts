@@ -5,10 +5,7 @@ plugins {
 android {
     namespace = "io.github.libxposed.api"
     compileSdk = 36
-
-    defaultConfig {
-        minSdk = 27
-    }
+    defaultConfig { minSdk = 27 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -16,5 +13,5 @@ android {
 }
 
 dependencies {
-    compileOnly(libs.androidx.annotation)
+    compileOnly("androidx.annotation:annotation:1.9.1")
 }
