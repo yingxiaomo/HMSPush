@@ -1,6 +1,7 @@
 package one.yufz.hmspush.hook
 
 import io.github.libxposed.api.XposedModule
+import io.github.libxposed.api.XposedModuleInterface.HotReloadedParam
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
 import one.yufz.hmspush.common.ANDROID_PACKAGE_NAME
@@ -20,6 +21,13 @@ class XposedMod : XposedModule() {
 
     override fun onModuleLoaded(param: ModuleLoadedParam) {
         initXposedInterface(this)
+    }
+
+    override fun onHotReloaded(param: HotReloadedParam) {
+        XLog.d(TAG, "hot reloaded")
+        // Re-init interface since old handles are invalidated
+        initXposedInterface(this)
+        // Old hooks are automatically unhooked by default
     }
 
     override fun onPackageReady(param: PackageReadyParam) {
