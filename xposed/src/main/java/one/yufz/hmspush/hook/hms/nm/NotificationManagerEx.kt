@@ -1,5 +1,6 @@
-//HMS use reflection to find this class, keep its package
 package com.huawei.android.app
+
+import one.yufz.hmspush.hook.hms.nm.handler.NotificationHandlers
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,7 +11,6 @@ import one.yufz.hmspush.hook.hms.PushHistory
 import one.yufz.hmspush.hook.hms.nm.INotificationManager
 import one.yufz.hmspush.hook.hms.nm.SelfNotificationManager
 import one.yufz.hmspush.hook.hms.nm.SystemNotificationManager
-import one.yufz.hmspush.hook.hms.nm.handler.NotificationHandlers
 import one.yufz.hmspush.hook.system.HookSystemService
 import java.lang.reflect.InvocationTargetException
 
@@ -44,18 +44,12 @@ object NotificationManagerEx {
 
     fun notify(context: Context, packageName: String, id: Int, notification: Notification) {
         XLog.d(TAG, "notify() called with: context = $context, packageName = $packageName, id = $id, notification = $notification")
-
-        tryInvoke {
-            NotificationHandlers.handle(notificationManager, context, packageName, id, notification)
-        }
-
+        tryInvoke { NotificationHandlers.handle(notificationManager, context, packageName, id, notification) }
         PushHistory.record(packageName)
     }
 
     fun createNotificationChannels(packageName: String, userId: Int, channels: List<NotificationChannel>) {
-        channels.forEach {
-            it.importance = NotificationManager.IMPORTANCE_HIGH
-        }
+        channels.forEach { it.importance = NotificationManager.IMPORTANCE_HIGH }
         XLog.d(TAG, "createNotificationChannels() called with: packageName = $packageName, userId = $userId, channels = $channels")
         tryInvoke { notificationManager.createNotificationChannels(packageName, userId, channels) }
     }
@@ -76,12 +70,8 @@ object NotificationManagerEx {
     }
 
     private inline fun <R> tryInvoke(invoke: () -> R): R {
-        try {
-            return invoke()
-        } catch (e: XposedHelpers.InvocationTargetError) {
-            XLog.e(TAG, "tryInvoke: ", e)
-            XLog.e(TAG, "tryInvoke targetException: ", e.cause)
-            throw e.cause ?: e
+        return try {
+            invoke()
         } catch (e: InvocationTargetException) {
             XLog.e(TAG, "tryInvoke: ", e)
             XLog.e(TAG, "tryInvoke targetException: ", e.targetException)
@@ -93,3 +83,5 @@ object NotificationManagerEx {
         }
     }
 }
+
+// Fix import: NotificationHandlers → NotificationHandlers

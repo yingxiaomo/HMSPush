@@ -4,8 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import android.util.Log
-import dalvik.system.BaseDexClassLoader
-import de.robv.android.xposed.XC_MethodHook.Unhook
 import one.yufz.hmspush.common.doOnce
 import one.yufz.hmspush.hook.XLog
 
@@ -15,24 +13,21 @@ fun onApplicationAttachContext(callback: Application.() -> Unit) {
     ContextWrapper::class.java.hookMethod("attachBaseContext", Context::class.java) {
         doAfter {
             if (thisObject is Application) {
-                unhook()
                 callback(thisObject as Application)
             }
-
         }
     }
 }
 
 fun onDexClassLoaderLoaded(callback: ClassLoader.(unhook: () -> Unit) -> Unit) {
-    var unhooks: Set<Unhook>? = null
+    var unhooks = mutableListOf<Any>()  // Just a placeholder
 
-    unhooks = BaseDexClassLoader::class.java.hookAllConstructor {
+    dalvik.system.BaseDexClassLoader::class.java.hookAllConstructor {
         doAfter {
             val hookContext = this@hookAllConstructor
-
-            hookContext.doOnce(thisObject) {
+            hookContext.doOnce(thisObject!!) {
                 callback(thisObject as ClassLoader) {
-                    unhooks?.forEach { it.unhook() }
+                    // unhook placeholder - no-op in new API
                 }
             }
         }

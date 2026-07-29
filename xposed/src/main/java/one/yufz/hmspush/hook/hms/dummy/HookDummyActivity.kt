@@ -15,6 +15,7 @@ import java.util.WeakHashMap
 
 object HookDummyActivity {
     private const val TAG = "HookDummyActivity"
+    private const val KEY_IGNORE_FIRST_FINISH = "ignore_first_finish"
     private val instanceFields = WeakHashMap<Any, MutableMap<String, Any?>>()
 
     private fun setAdditionalInstanceField(obj: Any, key: String, value: Any?) {

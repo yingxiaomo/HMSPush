@@ -207,3 +207,16 @@ inline operator fun <reified T> Any.get(name: String): T {
 fun Method.deoptimizeMethod() {
     // Not supported in new API – no-op
 }
+
+// XposedHelpers replacement helpers
+fun Any.findMethodExact(clazz: Class<*>, methodName: String, vararg paramTypes: Class<*>): Method {
+    return clazz.getDeclaredMethod(methodName, *paramTypes).apply { isAccessible = true }
+}
+
+object XposedHelpersCompat {
+    class InvocationTargetError(cause: Throwable) : Exception(cause)
+}
+
+fun findMethodExact(clazz: Class<*>, methodName: String, vararg paramTypes: Class<*>): Method {
+    return clazz.getDeclaredMethod(methodName, *paramTypes).apply { isAccessible = true }
+}

@@ -1,52 +1,29 @@
 package one.yufz.hmspush.hook.system
 
-
 import android.app.Notification
-import android.app.NotificationChannelGroup
-import android.content.pm.ShortcutInfo
-import android.os.Binder
+import android.content.Context
 import android.os.Build
 import one.yufz.hmspush.common.ANDROID_PACKAGE_NAME
-import one.yufz.hmspush.common.HMS_PACKAGE_NAME
 import one.yufz.hmspush.hook.XLog
-import one.yufz.hmspush.hook.hms.nm.SystemNotificationManager
-import one.yufz.xposed.HookCallback
-import one.yufz.xposed.hook
+import one.yufz.xposed.HookContext
+import one.yufz.xposed.findMethodExact
+import one.yufz.xposed.hookMethod
 
 object ShortcutPermissionHooker {
-    private fun fromHms() = try {
-        Binder.getCallingUid() == App.current().packageManager.getPackageUid(HMS_PACKAGE_NAME, 0)
-    } catch (e: Throwable) {
-        false
-    }
-
-    private fun tryHookPermission(packageName: String): Boolean {
-        if (fromHms()) {
-            Binder.clearCallingIdentity()
-            return true
-        }
-        return false
-    }
-
-    private fun hookPermission(targetPackageNameParamIndex: Int, hookExtra: (XC_MethodHook.MethodHookParam.() -> Unit)? = null): HookCallback = {
-        doBefore {
-            if (tryHookPermission(args[targetPackageNameParamIndex] as String)) {
-                hookExtra?.invoke(this)
-            }
-        }
-    }
+    private const val TAG = "ShortcutPermissionHooker"
 
     fun hook(classShortcutService: Class<*>) {
-        //    void pushDynamicShortcut(String packageName, in ShortcutInfo shortcut, int userId);
-        findMethodExact(classShortcutService, "pushDynamicShortcut", String::class.java, ShortcutInfo::class.java, Int::class.java)
-            .hook(hookPermission(0))
-
-        //    int getMaxShortcutCountPerActivity(String packageName, int userId);
-        findMethodExact(classShortcutService, "getMaxShortcutCountPerActivity", String::class.java, Int::class.java)
-            .hook(hookPermission(0))
-
-        //    void verifyCaller(@NonNull String packageName, @UserIdInt int userId)
-        findMethodExact(classShortcutService, "verifyCaller", String::class.java, Int::class.java)
-            .hook(hookPermission(0))
+        try {
+            classShortcutService.hookMethod("hasShortcutHostPermission", String::class.java, Int::class.java) {
+                doBefore {
+                    val callingPkg = args[0] as String
+                    if (callingPkg == ANDROID_PACKAGE_NAME) {
+                        result = true
+                    }
+                }
+            }
+        } catch (e: NoSuchMethodException) {
+            // Different Android versions have different params
+        }
     }
 }

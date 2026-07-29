@@ -1,6 +1,5 @@
 package one.yufz.hmspush.hook.system
 
-
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Binder
@@ -11,6 +10,8 @@ import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.callMethod
 import one.yufz.xposed.callStaticMethod
 import one.yufz.xposed.deoptimizeMethod
+import one.yufz.xposed.findClass
+import one.yufz.xposed.findMethodExact
 import one.yufz.xposed.get
 import one.yufz.xposed.hook
 import one.yufz.xposed.hookMethod
@@ -28,41 +29,34 @@ class HookSystemService {
                 false
             }
         }
-
     }
 
     fun hook(classLoader: ClassLoader) {
-        val classNotificationManagerService = //.findClass("com.android.server.notification.NotificationManagerService", classLoader)
+        val classNotificationManagerService = classLoader.findClass("com.android.server.notification.NotificationManagerService")
 
         classNotificationManagerService.hookMethod("onStart") {
             doAfter {
-                val context = thisObject.callMethod("getContext") as Context
+                val context = thisObject!!.callMethod("getContext") as Context
                 KeepHmsAlive(context).start()
-                val stubClass = thisObject.get<Any>("mService").javaClass
+                val stubClass = thisObject!!.get<Any>("mService").javaClass
                 hookPermission(stubClass)
                 hookSystemReadyFlag(stubClass)
             }
         }
 
-        //private boolean isPackageSuspendedForUser(String pkg, int uid)
         classNotificationManagerService.hookMethod("isPackageSuspendedForUser", String::class.java, Int::class.java) {
             doBefore {
                 if (Binder.getCallingUid() == 1000) {
-                    //suspend app can not show notification, fake its state
                     result = false
                 }
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            //int resolveNotificationUid(String callingPkg, String targetPkg, int callingUid, int userId)
-            XposedHelpers.findMethodExact(classNotificationManagerService, "resolveNotificationUid", String::class.java, String::class.java, Int::class.java, Int::class.java)
+            findMethodExact(classNotificationManagerService, "resolveNotificationUid",
+                String::class.java, String::class.java, Int::class.java, Int::class.java)
                 .deoptimizeMethod()
 
-            //https://cs.android.com/android/platform/superproject/+/android-cts-10.0_r1:frameworks/base/services/core/java/com/android/server/notification/NotificationManagerService.java;drc=86869c922207a240884697215ba0bf5b89bd0b37;l=1738
-            // there is a bug from android 10, the enqueueNotificationInternal method 3rd parameter is need a callingUid, in this method, r.sbn.getUid() actually is the targetUid
-            // when a notification post from HMSPush and snoozed, then the notification will never show again
-            // this hook temporary fix this issue
             try {
                 classNotificationManagerService.hookMethod("isCallerAndroid", String::class.java, Int::class.java) {
                     doBefore {
@@ -73,12 +67,11 @@ class HookSystemService {
                     }
                 }
             } catch (e: NoSuchMethodError) {
-                //Samsung One UI 7 delete this method
                 XLog.d(TAG, "hook isCallerAndroid error, NoSuchMethodError")
             }
         }
 
-        val classShortcutService = //.findClass("com.android.server.pm.ShortcutService", classLoader)
+        val classShortcutService = classLoader.findClass("com.android.server.pm.ShortcutService")
         ShortcutPermissionHooker.hook(classShortcutService)
     }
 

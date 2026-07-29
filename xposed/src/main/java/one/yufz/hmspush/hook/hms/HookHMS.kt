@@ -100,7 +100,7 @@ class HookHMS {
                         val request = args[0] as String
                         if (request.contains("auth.checkFingerprint")) {
                             val response = """{"header":{"auth_rtnCode":"0"},"body":{}}"""
-                            thisObject.callMethod("call", response)
+                            thisObject!!.callMethod("call", response)
                             result = null
                         }
                     }

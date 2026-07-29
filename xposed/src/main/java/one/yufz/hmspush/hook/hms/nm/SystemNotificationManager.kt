@@ -7,11 +7,13 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.service.notification.StatusBarNotification
-import android.util.Log
+
 import one.yufz.hmspush.common.ANDROID_PACKAGE_NAME
 import one.yufz.hmspush.hook.XLog
 import one.yufz.xposed.callMethod
 import one.yufz.xposed.callStaticMethod
+import one.yufz.xposed.findMethodExact
+import one.yufz.hmspush.hook.App
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class SystemNotificationManager : INotificationManager {
@@ -42,7 +44,7 @@ class SystemNotificationManager : INotificationManager {
     override fun getNotificationChannel(packageName: String, userId: Int, channelId: String, boolean: Boolean): NotificationChannel? {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //NotificationChannel getNotificationChannelForPackage(String pkg, int uid, String channelId, String conversationId, boolean includeDeleted);
-            XposedHelpers.findMethodExact(
+            findMethodExact(
                 notificationManager.javaClass,
                 "getNotificationChannelForPackage",
                 String::class.java,
@@ -54,14 +56,14 @@ class SystemNotificationManager : INotificationManager {
                 .invoke(notificationManager, packageName, getUid(packageName), channelId, null, boolean) as NotificationChannel?
         } else {
             //NotificationChannel getNotificationChannelForPackage(String pkg, int uid, String channelId, boolean includeDeleted);
-            XposedHelpers.findMethodExact(notificationManager.javaClass, "getNotificationChannelForPackage", String::class.java, Int::class.java, String::class.java, Boolean::class.java)
+            findMethodExact(notificationManager.javaClass, "getNotificationChannelForPackage", String::class.java, Int::class.java, String::class.java, Boolean::class.java)
                 .invoke(notificationManager, packageName, getUid(packageName), channelId, false) as NotificationChannel?
         }
     }
 
     override fun notify(context: Context, packageName: String, id: Int, notification: Notification) {
         //enqueueNotificationWithTag(String pkg, String opPkg, String tag, int id, Notification notification, int userId)
-        val methodEnqueueNotificationWithTag = XposedHelpers.findMethodExact(
+        val methodEnqueueNotificationWithTag = findMethodExact(
             notificationManager.javaClass,
             "enqueueNotificationWithTag",
             String::class.java,
@@ -80,8 +82,8 @@ class SystemNotificationManager : INotificationManager {
         channels.forEach {
             it.name = "[HMS]${it.name}"
         }
-        val channelsList = XposedHelpers.findConstructorExact("android.content.pm.ParceledListSlice", null, List::class.java)
-            .newInstance(channels)
+        val constructor = Class.forName("android.content.pm.ParceledListSlice").getDeclaredConstructor(List::class.java).apply { isAccessible = true }
+            val channelsList = constructor.newInstance(channels)
         notificationManager.callMethod("createNotificationChannelsForPackage", packageName, getUid(packageName), channelsList)
     }
 
@@ -89,12 +91,12 @@ class SystemNotificationManager : INotificationManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //void cancelNotificationWithTag(String pkg, String opPkg, String tag, int id, int userId);
             val methodCancelNotificationWithTag =
-                XposedHelpers.findMethodExact(notificationManager.javaClass, "cancelNotificationWithTag", String::class.java, String::class.java, String::class.java, Int::class.java, Int::class.java)
+                findMethodExact(notificationManager.javaClass, "cancelNotificationWithTag", String::class.java, String::class.java, String::class.java, Int::class.java, Int::class.java)
             methodCancelNotificationWithTag.invoke(notificationManager, packageName, ANDROID_PACKAGE_NAME, null, id, getUserId(context))
         } else {
             //  public void cancelNotificationWithTag(String pkg, String tag, int id, int userId)
             val methodCancelNotificationWithTag =
-                XposedHelpers.findMethodExact(notificationManager.javaClass, "cancelNotificationWithTag", String::class.java, String::class.java, Int::class.java, Int::class.java)
+                findMethodExact(notificationManager.javaClass, "cancelNotificationWithTag", String::class.java, String::class.java, Int::class.java, Int::class.java)
             methodCancelNotificationWithTag.invoke(notificationManager, packageName, null, id, getUserId(context))
         }
     }
