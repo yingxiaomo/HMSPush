@@ -16,7 +16,7 @@ HMS Core 是华为提供的一套服务，其中包含了推送功能，可以�
 ### 安装步骤：
 - 从应用市场下载并安装 `HMS Core`，比如 [腾讯应用宝](https://sj.qq.com/appdetail/com.huawei.hwid)、[酷安](https://www.coolapk.com/apk/com.huawei.hwid)、[APKMirror](https://www.apkmirror.com/apk/huawei-internet-services/huawei-mobile-services)
 
-- 下载最新版本 HMS Push 安装，在 LSPosed 中启用 HMSPush 模块，并勾选 「系统框架」、「HMS Core 」作用域，然后重启设备，[下载地址](https://github.com/fei-ke/HMSPush/releases/latest)
+- 下载最新版本 HMS Push 安装，在 LSPosed 中启用 HMSPush 模块，并勾选 「系统框架」、「HMS Core 」作用域，然后重启设备，[下载地址](https://github.com/yingxiaomo/HMSPush/releases/latest)
 
 - LSPosed 里 HMSPush 模块里勾选你需要支持推送的目标应用（这一步目的是将应用环境伪装成华为设备，如果你使用了其他方式伪装设备，可以不进行这一步），然后重启一到两次目标应用使其注册上推送通道
 
